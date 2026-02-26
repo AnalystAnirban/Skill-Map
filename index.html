@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Skill Map</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14; --surface: #161921; --surface2: #1e2230; --border: #2a2f42;
+    --text: #e8eaf0; --muted: #6b7494; --accent: #7c6af7; --accent2: #e85d8a; --green: #22c988;
+    --novice: #3a3f5c; --foundational: #2a4a6b; --intermediate: #1e5e7a; --advanced: #1a7a5e; --expert: #7c6af7;
+    --novice-t: #8899cc; --foundational-t: #5ba3d6; --intermediate-t: #3db8d6; --advanced-t: #3dd6a6; --expert-t: #b8b0ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  header {
+    padding: 24px 40px 18px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif; font-size: clamp(22px,3vw,38px);
+    letter-spacing: -0.02em; line-height: 1;
+    background: linear-gradient(135deg, var(--text) 40%, var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  header p { color: var(--muted); font-size: 12px; margin-top: 5px; }
+  .top-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  select, input {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 12px; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+    font-size: 12px; outline: none; cursor: pointer; transition: border-color 0.2s;
+  }
+  select:hover, input:hover, select:focus { border-color: var(--accent); }
+  input { width: 170px; }
+  input::placeholder { color: var(--muted); }
+  .view-btns { display: flex; gap: 3px; }
+  .view-btn {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+    padding: 7px 13px; border-radius: 8px; font-size: 12px; cursor: pointer;
+    transition: all 0.2s; font-family: 'DM Sans', sans-serif; font-weight: 500;
+  }
+  .view-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+  .stat-bar {
+    display: flex; gap: 20px; padding: 10px 40px;
+    background: var(--surface); border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center;
+  }
+  .stat { display: flex; flex-direction: column; gap: 1px; }
+  .stat-val { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--accent); }
+  .stat-label { font-size: 10px; color: var(--muted); }
+
+  .legend {
+    display: flex; gap: 14px; padding: 8px 40px;
+    border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center;
+  }
+  .legend-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-right: 2px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* Layout */
+  .app-layout { display: flex; }
+
+  /* Project Panel */
+  .project-panel {
+    width: 280px; min-width: 280px;
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    height: calc(100vh - 138px); overflow-y: auto;
+    position: sticky; top: 0;
+  }
+  .panel-header {
+    padding: 14px 18px 10px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+  }
+  .panel-title { font-family: 'DM Serif Display', serif; font-size: 15px; }
+  .panel-badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; background: rgba(124,106,247,0.2); color: var(--accent); font-weight: 600; }
+
+  .panel-section { padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .panel-section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; }
+  .panel-field { margin-bottom: 9px; }
+  .panel-field:last-child { margin-bottom: 0; }
+  .panel-field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .panel-field select { width: 100%; }
+
+  .btn-row { display: flex; gap: 8px; padding: 12px 18px; flex-shrink: 0; }
+  .run-btn {
+    flex: 1; padding: 9px 0; border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), #a78bfa);
+    color: white; font-family: 'DM Sans', sans-serif; font-weight: 600;
+    font-size: 12px; border: none; cursor: pointer; transition: opacity 0.2s;
+  }
+  .run-btn:hover { opacity: 0.85; }
+  .clear-btn {
+    flex: 1; padding: 9px 0; border-radius: 9px;
+    background: var(--surface2); color: var(--muted); font-family: 'DM Sans', sans-serif;
+    font-weight: 500; font-size: 12px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
+  }
+  .clear-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .suggestions-area { padding: 0 18px 20px; flex: 1; }
+  .suggestions-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 14px 0 8px; }
+
+  .req-summary {
+    background: rgba(124,106,247,0.07); border: 1px solid rgba(124,106,247,0.2);
+    border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: 11px;
+  }
+  .req-summary strong { color: var(--accent); display: block; margin-bottom: 5px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .req-row { display: flex; justify-content: space-between; color: var(--muted); margin-bottom: 2px; }
+  .req-val { color: var(--text); font-weight: 500; }
+
+  .suggestion-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px; margin-bottom: 8px; transition: border-color 0.2s;
+  }
+  .suggestion-card:hover { border-color: var(--accent); }
+  .suggestion-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .suggestion-card-title { font-weight: 600; font-size: 12px; }
+  .score-badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 700; }
+  .score-high { background: rgba(34,201,136,0.15); color: var(--green); }
+  .score-med  { background: rgba(232,168,124,0.15); color: #e8a87c; }
+  .score-low  { background: rgba(232,93,138,0.15);  color: var(--accent2); }
+
+  .team-member-row {
+    display: flex; align-items: center; padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 11px;
+  }
+  .team-member-row:last-child { border-bottom: none; }
+  .team-role-label { font-size: 10px; color: var(--muted); width: 68px; flex-shrink: 0; }
+  .team-member-name { font-weight: 500; flex: 1; padding: 0 6px; }
+  .team-skill-tag { font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
+
+  .no-suggestions { color: var(--muted); font-size: 12px; text-align: center; padding: 20px 4px; line-height: 1.7; }
+  .no-suggestions strong { color: var(--text); }
+
+  /* Main area */
+  .main-content { flex: 1; min-width: 0; padding: 18px 28px 40px; overflow-x: hidden; }
+  .heatmap-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; font-size: 12px; table-layout: auto; }
+
+  thead tr.cat-row th {
+    position: sticky; top: 0; z-index: 2; background: var(--bg);
+    padding: 10px 6px 8px; text-align: center; white-space: nowrap;
+    border-bottom: 2px solid var(--border);
+  }
+  thead tr.cat-row th.person-col {
+    text-align: left; min-width: 185px; position: sticky; left: 0; z-index: 4; background: var(--bg);
+  }
+  thead tr.skill-row th {
+    position: sticky; top: 43px; z-index: 2; background: var(--bg);
+    padding: 6px 6px 7px; vertical-align: middle; border-bottom: 1px solid var(--border);
+    width: 82px; min-width: 82px; max-width: 82px;
+  }
+  thead tr.skill-row th.person-col-spacer {
+    position: sticky; left: 0; top: 43px; z-index: 4; background: var(--bg);
+    width: 185px; min-width: 185px;
+  }
+  .skill-name-wrap {
+    display: block; font-size: 11px; font-weight: 400; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 76px; transition: color 0.15s; cursor: default;
+  }
+  thead tr.skill-row th:hover .skill-name-wrap { color: var(--text); }
+  .category-header { font-family: 'DM Serif Display', serif; font-size: 13px; letter-spacing: 0.02em; padding: 6px 10px 8px; border-radius: 6px 6px 0 0; }
+  .category-transferable { color: #7ca8e8 !important; background: rgba(124,168,232,0.06) !important; border-bottom: 2px solid rgba(124,168,232,0.35) !important; }
+  .category-core         { color: #e8a87c !important; background: rgba(232,168,124,0.06) !important; border-bottom: 2px solid rgba(232,168,124,0.35) !important; }
+  .category-technical    { color: #7ce8b8 !important; background: rgba(124,232,184,0.06) !important; border-bottom: 2px solid rgba(124,232,184,0.35) !important; }
+  .col-core .skill-name-wrap      { color: rgba(232,168,124,0.75); }
+  .col-technical .skill-name-wrap { color: rgba(124,232,184,0.75); }
+  .col-divider { border-right: 2px solid var(--border) !important; }
+  .td-divider  { border-right: 2px solid var(--border); }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+  tbody tr:nth-child(even) td { background: rgba(255,255,255,0.012); }
+  tbody tr:hover td { background: var(--surface) !important; }
+  tbody tr.highlighted { background: rgba(34,201,136,0.05) !important; }
+  tbody tr.highlighted td.person-info { border-left: 3px solid var(--green); }
+
+  td { padding: 4px 3px; text-align: center; vertical-align: middle; width: 82px; min-width: 82px; max-width: 82px; }
+  td.person-info {
+    text-align: left; position: sticky; left: 0; background: var(--bg); z-index: 1;
+    min-width: 185px; border-right: 1px solid var(--border); padding: 5px 10px;
+  }
+  tbody tr.highlighted td.person-info { background: rgba(34,201,136,0.04); }
+  tbody tr:hover td.person-info { background: var(--surface) !important; }
+
+  .person-name { font-weight: 500; font-size: 12px; }
+  .person-role { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .person-manager { font-size: 10px; color: #3a3f5c; margin-top: 1px; }
+
+  .skill-cell {
+    width: 26px; height: 26px; border-radius: 5px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s; margin: 1px auto;
+  }
+  .skill-cell:hover { transform: scale(1.25); box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+  .skill-cell.eligible { outline: 2px solid rgba(34,201,136,0.7); outline-offset: 1px; }
+  .skill-Novice       { background: var(--novice);       color: var(--novice-t); }
+  .skill-Foundational { background: var(--foundational); color: var(--foundational-t); }
+  .skill-Intermediate { background: var(--intermediate); color: var(--intermediate-t); }
+  .skill-Advanced     { background: var(--advanced);     color: var(--advanced-t); }
+  .skill-Expert       { background: var(--expert);       color: white; }
+
+  /* Card view */
+  .card-view { display: none; }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px,1fr)); gap: 14px; }
+  .person-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px; transition: border-color 0.2s, transform 0.2s;
+  }
+  .person-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .person-card.highlighted { border-color: var(--green) !important; background: rgba(34,201,136,0.03); }
+  .card-name { font-family: 'DM Serif Display', serif; font-size: 17px; }
+  .card-meta { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
+  .badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 500; }
+  .badge-role    { background: rgba(124,106,247,0.2); color: var(--accent); }
+  .badge-manager { background: var(--surface2); color: var(--muted); }
+  .skill-groups { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  .skill-group-title { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .skill-group-title.transferable { color: #7ca8e8; }
+  .skill-group-title.core { color: #e8a87c; }
+  .skill-group-title.technical { color: #7ce8b8; }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .skill-tag { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 500; }
+  .tag-Novice       { background: var(--novice);       color: var(--novice-t); }
+  .tag-Foundational { background: var(--foundational); color: var(--foundational-t); }
+  .tag-Intermediate { background: var(--intermediate); color: var(--intermediate-t); }
+  .tag-Advanced     { background: var(--advanced);     color: var(--advanced-t); }
+  .tag-Expert       { background: var(--expert);       color: white; }
+
+  /* Toggle switch */
+  .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;
+    transition: background 0.2s;
+  }
+  .toggle-slider:before {
+    content: ""; position: absolute; height: 14px; width: 14px;
+    left: 2px; top: 2px; background: var(--muted); border-radius: 50%; transition: 0.2s;
+  }
+  .toggle-switch input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); background: white; }
+
+  .tooltip {
+    position: fixed; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 12px; font-size: 11px;
+    pointer-events: none; z-index: 999; opacity: 0; transition: opacity 0.12s; max-width: 220px;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip strong { display: block; color: var(--accent); margin-bottom: 2px; }
+
+  @media (max-width: 860px) {
+    .app-layout { flex-direction: column; }
+    .project-panel { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); }
+    header, .main-content { padding-left: 16px; padding-right: 16px; }
+    .legend, .stat-bar { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="tooltip" id="tooltip"></div>
+
+<header>
+  <div>
+    <h1>Team Skill Map</h1>
+    <p>29 team members &middot; 33 skills &middot; Transferable, Core &amp; Technical</p>
+  </div>
+  <div class="top-controls">
+    <input type="text" id="search" placeholder="Search name or role&hellip;">
+    <select id="roleFilter"><option value="">All Roles</option></select>
+    <select id="managerFilter"><option value="">All Managers</option></select>
+    <div class="view-btns">
+      <button class="view-btn active" onclick="setView('grid')">Grid</button>
+      <button class="view-btn" onclick="setView('cards')">Cards</button>
+    </div>
+  </div>
+</header>
+
+<div class="stat-bar">
+  <div class="stat"><span class="stat-val" id="statPeople">29</span><span class="stat-label">Showing</span></div>
+  <div class="stat"><span class="stat-val" id="statRoles">8</span><span class="stat-label">Roles</span></div>
+  <div class="stat"><span class="stat-val" id="statManagers">4</span><span class="stat-label">Managers</span></div>
+  <div class="stat"><span class="stat-val" id="statExperts">—</span><span class="stat-label">Expert Skills</span></div>
+</div>
+
+<div class="legend">
+  <span class="legend-label">Level:</span>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--novice)"></div>Novice</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--foundational)"></div>Foundational</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--intermediate)"></div>Intermediate</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--advanced)"></div>Advanced</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--expert)"></div>Expert</div>
+  <span style="margin-left:10px; color:var(--border)">|</span>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--green); width:10px; height:10px; border-radius:2px; outline:2px solid rgba(34,201,136,0.6); outline-offset:1px;"></div>Eligible for project</div>
+  <div class="legend-item"><div style="width:10px;height:10px;border-radius:2px;border-left:3px solid var(--green);background:rgba(34,201,136,0.1)"></div>Suggested in team</div>
+</div>
+
+<div class="app-layout">
+
+  <!-- PROJECT PANEL -->
+  <div class="project-panel">
+    <div class="panel-header">
+      <span class="panel-title">Project Matcher</span>
+      <span class="panel-badge">SMART</span>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Project Specifications</div>
+      <div class="panel-field">
+        <label>Project Type</label>
+        <select id="projType" onchange="onProjTypeChange()">
+          <option value="non_product">Non Product Module</option>
+          <option value="product">Product Module</option>
+        </select>
+      </div>
+      <div class="panel-field">
+        <label>E-Learning Level</label>
+        <select id="projLevel">
+          <option value="1">Level 1</option>
+          <option value="2">Level 2</option>
+          <option value="3">Level 3</option>
+        </select>
+      </div>
+      <div class="panel-field">
+        <label>Modality</label>
+        <select id="projModality" onchange="syncKeyTool()">
+          <option value="rise">RISE</option>
+          <option value="storyline">Storyline</option>
+          <option value="video">Video / Multimedia</option>
+          <option value="qrg">QRG / Job Aid</option>
+          <option value="training_arcade">Training Arcade</option>
+        </select>
+      </div>
+      <div class="panel-field">
+        <label>Key Tool <span style="color:var(--muted);font-weight:400">(auto-set or override)</span></label>
+        <select id="projKeyTool">
+          <option value="Articulate Rise">Articulate Rise</option>
+          <option value="Articulate Storyline">Articulate Storyline</option>
+          <option value="Adobe After Effects">Adobe After Effects</option>
+          <option value="Powtoon">Powtoon</option>
+          <option value="Adobe Premier Pro">Adobe Premier Pro</option>
+          <option value="Adobe Acrobat">Adobe Acrobat</option>
+          <option value="Training Arcade">Training Arcade</option>
+          <option value="Adobe Captivate">Adobe Captivate</option>
+          <option value="Adobe Photoshop">Adobe Photoshop</option>
+          <option value="Adobe Illustrator">Adobe Illustrator</option>
+          <option value="Adobe InDesign">Adobe InDesign</option>
+          <option value="Grammarly">Grammarly</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Optional Roles</div>
+      <div class="panel-field" style="display:flex;align-items:center;justify-content:space-between;">
+        <label style="margin:0">Include QAC</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="includeQAC">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="panel-field" id="mwField" style="display:flex;align-items:center;justify-content:space-between;">
+        <label style="margin:0">Medical Writer <span id="mwRequired" style="color:var(--accent2);font-size:10px;display:none">required</span></label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="includeMW">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="panel-field" style="display:flex;align-items:center;justify-content:space-between;">
+        <label style="margin:0">Content Developer <span style="color:var(--muted);font-size:10px">vs Multimedia</span></label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="useContentDev">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="panel-section" id="requirementsDisplay" style="display:none">
+      <div class="panel-section-title">Derived Requirements</div>
+      <div id="reqSummaryBox"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="run-btn" onclick="runMatcher()">✦ Find Teams</button>
+      <button class="clear-btn" onclick="clearMatcher()">Clear</button>
+    </div>
+
+    <div class="suggestions-area" id="suggestionsArea">
+      <div class="no-suggestions" id="noSuggestionsMsg">
+        Set project specs above and click <strong>Find Teams</strong> to see suggested combinations.
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <div class="grid-view" id="gridView">
+      <div class="heatmap-wrap">
+        <table id="skillTable">
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card-view" id="cardView">
+      <div class="cards-grid" id="cardsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const people = [{"name":"Aarohi Ranadive","manager":"George Tobias","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Intermediate","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Intermediate","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Intermediate","Adobe Captivate":"Novice","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Novice","Powtoon":"Intermediate"}},{"name":"APUURVA M. S.","manager":"Priyanka Sharma","role":"Instructional Designer","skills":{}},{"name":"Brinda Krishna","manager":"George Tobias","role":"Instructional Designer","skills":{"Agility":"Advanced","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Advanced","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Advanced","Project Management":"Advanced","Performance Consulting":"Advanced","Customer/External Focus":"Advanced","Instructional Design (Learning Theories & ADDIE)":"Advanced","Editorial Standards & Document Control":"Advanced","Adobe Acrobat":"Intermediate","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Novice","Adobe Illustrator":"Novice","Adobe Photoshop":"Novice","Articulate Rise":"Advanced","Grammarly":"Expert","Microsoft Excel":"Expert","Power BI":"Intermediate","Smartsheet":"Advanced","Training Arcade":"Advanced"}},{"name":"Devaiah PC","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Adobe Acrobat":"Foundational","Adobe Captivate":"Novice","Adobe Firefly":"Novice","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Foundational","Grammarly":"Advanced","Microsoft Excel":"Advanced","Smartsheet":"Foundational","Training Arcade":"Novice","Powtoon":"Foundational"}},{"name":"Harsh Gandhi","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Intermediate","Project Management":"Foundational","Customer/External Focus":"Intermediate","Instructional Design (Learning Theories & ADDIE)":"Advanced","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Intermediate","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Novice","Powtoon":"Intermediate"}},{"name":"Janani Balasundar","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Agility":"Advanced","Business Acumen":"Foundational","Communication":"Advanced","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Advanced","Decision-Making":"Foundational","Project Management":"Intermediate","Performance Consulting":"Foundational","Customer/External Focus":"Intermediate","Instructional Design (Learning Theories & ADDIE)":"Advanced","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Intermediate","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Intermediate","Smartsheet":"Intermediate","Training Arcade":"Intermediate","Powtoon":"Advanced"}},{"name":"John Anthraper","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Advanced","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Performance Consulting":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Intermediate","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Intermediate","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Intermediate","Articulate Storyline":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Intermediate","Smartsheet":"Intermediate","Training Arcade":"Foundational","Powtoon":"Advanced"}},{"name":"Lakshmi A","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Agility":"Foundational","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Foundational","Adobe Acrobat":"Foundational","Adobe Captivate":"Novice","Adobe Firefly":"Novice","Articulate Rise":"Intermediate","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Novice","Powtoon":"Foundational"}},{"name":"Nidhi Chaurasia","manager":"George Tobias","role":"Instructional Designer","skills":{}},{"name":"Pruthvi Avadhani H A","manager":"George Tobias","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Intermediate","Decision-Making":"Intermediate","Project Management":"Intermediate","Performance Consulting":"Intermediate","Customer/External Focus":"Intermediate","Instructional Design (Learning Theories & ADDIE)":"Advanced","Editorial Standards & Document Control":"Advanced","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Intermediate","Microsoft Excel":"Intermediate","Smartsheet":"Intermediate","Training Arcade":"Advanced","Powtoon":"Advanced"}},{"name":"Rashi Nagelia","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Intermediate","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Adobe Captivate":"Novice","Adobe Firefly":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Foundational","Powtoon":"Intermediate"}},{"name":"Rhea Ann Expidite","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Intermediate","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Intermediate","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Intermediate","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Foundational","Powtoon":"Foundational"}},{"name":"Sneha Bhowmick","manager":"George Tobias","role":"Instructional Designer","skills":{"Agility":"Advanced","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Advanced","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Advanced","Project Management":"Advanced","Performance Consulting":"Intermediate","Customer/External Focus":"Advanced","Instructional Design (Learning Theories & ADDIE)":"Expert","Editorial Standards & Document Control":"Advanced","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Expert","Articulate Storyline":"Advanced","Grammarly":"Advanced","Microsoft Excel":"Foundational","Smartsheet":"Intermediate","Training Arcade":"Advanced","Powtoon":"Advanced"}},{"name":"Tarun Pal","manager":"Priyanka Sharma","role":"Instructional Designer","skills":{}},{"name":"Nabarun Deb","manager":"Cicilyrose Anthony","role":"Editor","skills":{"Agility":"Foundational","Business Acumen":"Novice","Communication":"Foundational","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Novice","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Novice"}},{"name":"Neena Gopi","manager":"Cicilyrose Anthony","role":"Editor","skills":{"Agility":"Foundational","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Intermediate","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational"}},{"name":"Similu Saji","manager":"Cicilyrose Anthony","role":"Editor","skills":{"Agility":"Foundational","Business Acumen":"Novice","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Novice","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational"}},{"name":"Harpreet Kaur","manager":"Harsha C","role":"Medical Writer","skills":{"Agility":"Advanced","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Intermediate","Project Management":"Advanced","Performance Consulting":"Foundational","Customer/External Focus":"Intermediate","Editorial Standards & Document Control":"Advanced","Medical Writing (Therapeutic Areas & References)":"Advanced","Adobe Acrobat":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Intermediate","Power BI":"Foundational"}},{"name":"Sai ramarathinam","manager":"Harsha C","role":"Medical Writer","skills":{"Agility":"Advanced","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Intermediate","Project Management":"Advanced","Customer/External Focus":"Intermediate","Editorial Standards & Document Control":"Advanced","Medical Writing (Therapeutic Areas & References)":"Advanced","Adobe Acrobat":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Intermediate","Power BI":"Foundational"}},{"name":"Namita Gowtham","manager":"Harsha C","role":"Medical Writer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Intermediate","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Advanced","Medical Writing (Therapeutic Areas & References)":"Advanced","Adobe Acrobat":"Foundational","Grammarly":"Advanced","Microsoft Excel":"Foundational"}},{"name":"Meera Mehta","manager":"Harsha C","role":"Medical Writer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Editorial Standards & Document Control":"Intermediate","Medical Writing (Therapeutic Areas & References)":"Intermediate","Adobe Acrobat":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational"}},{"name":"Priyanshu Bose","manager":"Harsha C","role":"Multimedia Specialist","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Intermediate","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Captivate":"Foundational","Adobe Firefly":"Advanced","Adobe Illustrator":"Advanced","Adobe InDesign":"Intermediate","Adobe Photoshop":"Advanced","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"Mili Raj","manager":"Harsha C","role":"Multimedia Specialist","skills":{"Agility":"Foundational","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Advanced","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Illustrator":"Advanced","Adobe InDesign":"Advanced","Adobe Photoshop":"Advanced","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"Shailesh Garg","manager":"Harsha C","role":"Multimedia Specialist","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Intermediate","Adobe InDesign":"Intermediate","Adobe Photoshop":"Intermediate","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"Shyjith P","manager":"Harsha C","role":"Multimedia Specialist","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Intermediate","Adobe InDesign":"Intermediate","Adobe Photoshop":"Intermediate","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"Padmanaban Vengadarathinam","manager":"Harsha C","role":"Content Developer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe InDesign":"Foundational","Adobe Photoshop":"Foundational","Adobe Premier Pro":"Intermediate","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Microsoft Excel":"Foundational","Powtoon":"Foundational"}},{"name":"Niyas N","manager":"Harsha C","role":"Content Developer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Intermediate","Adobe InDesign":"Intermediate","Adobe Photoshop":"Intermediate","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"JESU DENNIS","manager":"Harsha C","role":"UI/UX","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Expert","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Intermediate","Adobe Illustrator":"Advanced","Adobe InDesign":"Intermediate","Adobe Photoshop":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Grammarly":"Foundational","Smartsheet":"Foundational"}},{"name":"Sanjesh Pratap Singh","manager":"Cicilyrose Anthony","role":"QA","skills":{}}];
+
+const skillCategories = {
+  transferable: ["Agility","Business Acumen","Communication","Influence & Persuasion","Continuous Learning & Adaptability","Problem-Solving","Decision-Making","Project Management","Performance Consulting","Customer/External Focus"],
+  core:         ["Instructional Design (Learning Theories & ADDIE)","Editorial Standards & Document Control","Medical Writing (Therapeutic Areas & References)","Graphic Design & UI/UX"],
+  technical:    ["Adobe Acrobat","Adobe After Effects","Adobe Captivate","Adobe Firefly","Adobe Illustrator","Adobe InDesign","Adobe Photoshop","Adobe Premier Pro","Articulate Rise","Articulate Storyline","Grammarly","Microsoft Excel","Power BI","ServiceNow","Smartsheet","Success Factors","Training Arcade","VQD","Powtoon"]
+};
+const allSkills  = [...skillCategories.transferable, ...skillCategories.core, ...skillCategories.technical];
+const levelAbbr  = { Novice:'N', Foundational:'F', Intermediate:'I', Advanced:'A', Expert:'E' };
+const levelRank  = { Novice:1, Foundational:2, Intermediate:3, Advanced:4, Expert:5 };
+
+// ── PROJECT REQUIREMENT ENGINE ────────────────────────────────────────────────
+
+// Modality → primary tools (first = primary, rest = secondary options shown in Key Tool)
+const modalityConfig = {
+  rise:            { label:'RISE',              primaryTool:'Articulate Rise',      spocRole:['Instructional Designer'] },
+  storyline:       { label:'Storyline',         primaryTool:'Articulate Storyline', spocRole:['Instructional Designer'] },
+  video:           { label:'Video / Multimedia', primaryTool:'Adobe After Effects', secondaryTool:'Powtoon', tertiaryTool:'Adobe Premier Pro', spocRole:['Instructional Designer','Multimedia Specialist'] },
+  qrg:             { label:'QRG / Job Aid',     primaryTool:'Adobe Acrobat',        spocRole:['Instructional Designer'] },
+  training_arcade: { label:'Training Arcade',   primaryTool:'Training Arcade',      spocRole:['Instructional Designer'] },
+};
+
+// Proficiency rank for comparison
+const levelRankMap = { Novice:1, Foundational:2, Intermediate:3, Advanced:4, Expert:5 };
+function meetsLevel(has, min) {
+  if (!min) return true;
+  if (!has)  return false;
+  return (levelRankMap[has]||0) >= (levelRankMap[min]||0);
+}
+
+// All transferable + functional skills used for SPOC/ID functional check
+const transferableSkills = [
+  "Agility","Business Acumen","Communication","Influence & Persuasion",
+  "Continuous Learning & Adaptability","Problem-Solving","Decision-Making",
+  "Project Management","Performance Consulting","Customer/External Focus"
+];
+const ID_SKILL  = 'Instructional Design (Learning Theories & ADDIE)';
+const ED_SKILL  = 'Editorial Standards & Document Control';
+const MED_SKILL = 'Medical Writing (Therapeutic Areas & References)';
+
+// Minimum proficiency requirements per role per level
+// SPOC L1: Foundational–Intermediate functional + Foundational tool
+// SPOC L2: Intermediate–Advanced functional + Intermediate tool
+// SPOC L3: Advanced functional + Advanced tool
+// ID mirrors SPOC (SPOC is just the most senior ID)
+// Editor: primarily evaluated on ED_SKILL
+// Multimedia/Content Dev/Medical Writer: mirrors SPOC/ID framework scaled by level
+const levelReqs = {
+  1: {
+    spoc:       { funcMin:'Foundational', idMin:'Intermediate',  toolMin:'Foundational', editMin:null,           medMin:null },
+    id:         { funcMin:'Foundational', idMin:'Foundational',  toolMin:'Foundational', editMin:null,           medMin:null },
+    editor:     { funcMin:null,           idMin:null,            toolMin:null,           editMin:'Foundational', medMin:null },
+    multimedia: { funcMin:'Foundational', idMin:null,            toolMin:'Foundational', editMin:null,           medMin:null },
+    contentdev: { funcMin:'Foundational', idMin:null,            toolMin:'Foundational', editMin:null,           medMin:null },
+    medical:    { funcMin:'Foundational', idMin:null,            toolMin:null,           editMin:'Foundational', medMin:'Foundational' },
+    qac:        { funcMin:null,           idMin:null,            toolMin:null,           editMin:'Foundational', medMin:null },
+  },
+  2: {
+    spoc:       { funcMin:'Intermediate', idMin:'Advanced',      toolMin:'Intermediate', editMin:null,           medMin:null },
+    id:         { funcMin:'Intermediate', idMin:'Intermediate',  toolMin:'Intermediate', editMin:null,           medMin:null },
+    editor:     { funcMin:null,           idMin:null,            toolMin:null,           editMin:'Intermediate', medMin:null },
+    multimedia: { funcMin:'Intermediate', idMin:null,            toolMin:'Intermediate', editMin:null,           medMin:null },
+    contentdev: { funcMin:'Intermediate', idMin:null,            toolMin:'Intermediate', editMin:null,           medMin:null },
+    medical:    { funcMin:'Intermediate', idMin:null,            toolMin:null,           editMin:'Intermediate', medMin:'Intermediate' },
+    qac:        { funcMin:null,           idMin:null,            toolMin:null,           editMin:'Intermediate', medMin:null },
+  },
+  3: {
+    spoc:       { funcMin:'Advanced',     idMin:'Advanced',      toolMin:'Advanced',     editMin:null,           medMin:null },
+    id:         { funcMin:'Advanced',     idMin:'Advanced',      toolMin:'Advanced',     editMin:null,           medMin:null },
+    editor:     { funcMin:null,           idMin:null,            toolMin:null,           editMin:'Advanced',     medMin:null },
+    multimedia: { funcMin:'Advanced',     idMin:null,            toolMin:'Advanced',     editMin:null,           medMin:null },
+    contentdev: { funcMin:'Advanced',     idMin:null,            toolMin:'Advanced',     editMin:null,           medMin:null },
+    medical:    { funcMin:'Advanced',     idMin:null,            toolMin:null,           editMin:'Advanced',     medMin:'Advanced' },
+    qac:        { funcMin:null,           idMin:null,            toolMin:null,           editMin:'Advanced',     medMin:null },
+  },
+};
+
+// Score a person against a role's requirements (0–1, must be 1.0 to fully qualify)
+function calcScore(person, roleKey, reqs, tool) {
+  const r = reqs[roleKey];
+  let hits = 0, total = 0;
+  if (r.funcMin) {
+    total++;
+    if (transferableSkills.some(s => meetsLevel(person.skills[s], r.funcMin))) hits++;
+  }
+  if (r.idMin)   { total++; if (meetsLevel(person.skills[ID_SKILL],  r.idMin))   hits++; }
+  if (r.editMin) { total++; if (meetsLevel(person.skills[ED_SKILL],  r.editMin)) hits++; }
+  if (r.medMin)  { total++; if (meetsLevel(person.skills[MED_SKILL], r.medMin))  hits++; }
+  if (tool && r.toolMin) { total++; if (meetsLevel(person.skills[tool], r.toolMin)) hits++; }
+  return total === 0 ? 1 : hits / total;
+}
+
+function qualifies(person, roleKey, reqs, tool) { return calcScore(person, roleKey, reqs, tool) >= 1; }
+
+// ── MATCHER STATE ─────────────────────────────────────────────────────────────
+let activeTeamNames     = new Set();
+let activeEligibleNames = new Set();
+let eligibleSkillSet    = {};
+let matcherActive       = false;
+
+// Auto-sync Key Tool when Modality changes
+function syncKeyTool() {
+  const mod = document.getElementById('projModality').value;
+  const cfg = modalityConfig[mod];
+  if (cfg) {
+    document.getElementById('projKeyTool').value = cfg.primaryTool;
+  }
+}
+
+// Auto-toggle Medical Writer when Product Module selected
+function onProjTypeChange() {
+  const isProduct = document.getElementById('projType').value === 'product';
+  const mwCb  = document.getElementById('includeMW');
+  const mwReq = document.getElementById('mwRequired');
+  mwCb.checked  = isProduct;
+  mwReq.style.display = isProduct ? 'inline' : 'none';
+}
+
+function runMatcher() {
+  const projType     = document.getElementById('projType').value;
+  const level        = parseInt(document.getElementById('projLevel').value);
+  const modality     = document.getElementById('projModality').value;
+  const tool         = document.getElementById('projKeyTool').value;
+  const includeQAC   = document.getElementById('includeQAC').checked;
+  const includeMW    = document.getElementById('includeMW').checked;
+  const useContentDev = document.getElementById('useContentDev').checked;
+  const reqs         = levelReqs[level];
+  const cfg          = modalityConfig[modality];
+  const isProduct    = projType === 'product';
+
+  // Determine valid SPOC roles based on modality + project type
+  let spocRoles = [...cfg.spocRole];
+  if (isProduct) spocRoles.push('Medical Writer'); // Senior MW can SPOC product modules
+
+  // Pools per role
+  const pool = {
+    spoc:      people.filter(p => spocRoles.includes(p.role) && qualifies(p, p.role==='Medical Writer'?'medical':'spoc', reqs, tool)),
+    id:        people.filter(p => p.role === 'Instructional Designer' && qualifies(p,'id', reqs, tool)),
+    editor:    people.filter(p => p.role === 'Editor'                 && qualifies(p,'editor', reqs, tool)),
+    mm:        useContentDev
+                 ? people.filter(p => p.role === 'Content Developer'      && qualifies(p,'contentdev', reqs, tool))
+                 : people.filter(p => ['Multimedia Specialist','UI/UX'].includes(p.role) && qualifies(p,'multimedia', reqs, tool)),
+    medical:   includeMW ? people.filter(p => p.role === 'Medical Writer' && qualifies(p,'medical', reqs, tool)) : [],
+    qac:       includeQAC ? people.filter(p => p.role === 'Editor'        && qualifies(p,'qac', reqs, tool)) : [],
+  };
+
+  // Score and rank each pool
+  const ranked = (arr, key) => arr
+    .map(p => ({...p, score: calcScore(p, key, reqs, tool)}))
+    .sort((a,b) => b.score - a.score);
+
+  const rSpoc = ranked(pool.spoc, 'spoc');
+  const rId   = ranked(pool.id,   'id');
+  const rEd   = ranked(pool.editor,'editor');
+  const rMm   = useContentDev ? ranked(pool.mm,'contentdev') : ranked(pool.mm,'multimedia');
+  const rMw   = ranked(pool.medical,'medical');
+  const rQac  = ranked(pool.qac,'qac');
+
+  // All eligible names for heatmap highlight
+  activeEligibleNames = new Set([...rSpoc,...rId,...rEd,...rMm,...rMw,...rQac].map(p=>p.name));
+  eligibleSkillSet = {};
+  activeEligibleNames.forEach(name => {
+    eligibleSkillSet[name] = new Set();
+    if (tool) eligibleSkillSet[name].add(tool);
+    eligibleSkillSet[name].add(ID_SKILL);
+    eligibleSkillSet[name].add(ED_SKILL);
+    if (includeMW) eligibleSkillSet[name].add(MED_SKILL);
+    transferableSkills.forEach(s => eligibleSkillSet[name].add(s));
+  });
+
+  // Build up to 3 best teams — best-available-first (no manager diversity constraint)
+  const used = { spoc:new Set(), id:new Set(), editor:new Set(), mm:new Set(), mw:new Set(), qac:new Set() };
+  const teams = [];
+  const mmLabel = useContentDev ? 'Content Developer' : 'Multimedia Specialist';
+
+  for (let t = 0; t < 3; t++) {
+    const spoc = rSpoc.find(p => !used.spoc.has(p.name));
+    const id   = rId.find(p   => !used.id.has(p.name) && p.name !== spoc?.name);
+    const ed   = rEd.find(p   => !used.editor.has(p.name) && p.name !== spoc?.name && p.name !== id?.name);
+    const mm   = rMm.find(p   => !used.mm.has(p.name));
+    const mw   = includeMW  ? rMw.find(p  => !used.mw.has(p.name)  && p.name !== spoc?.name) : null;
+    const qac  = includeQAC ? rQac.find(p => !used.qac.has(p.name) && p.name !== ed?.name)   : null;
+
+    if (!spoc && !id) break;
+
+    const team = [];
+    if (spoc) { team.push({ label:'SPOC',           person:spoc }); used.spoc.add(spoc.name); }
+    if (id)   { team.push({ label:'ID',             person:id });   used.id.add(id.name); }
+    if (ed)   { team.push({ label:'Editor',         person:ed });   used.editor.add(ed.name); }
+    if (mm)   { team.push({ label:mmLabel,          person:mm });   used.mm.add(mm.name); }
+    if (mw)   { team.push({ label:'Medical Writer', person:mw });   used.mw.add(mw.name); }
+    if (qac)  { team.push({ label:'QAC',            person:qac });  used.qac.add(qac.name); }
+
+    if (team.length > 0) teams.push(team);
+  }
+
+  // Show requirement summary
+  const levelLabel  = {1:'Level 1',2:'Level 2',3:'Level 3'}[level];
+  const r = reqs.spoc;
+  document.getElementById('reqSummaryBox').innerHTML = `
+    <div class="req-summary">
+      <strong>Requirements</strong>
+      <div class="req-row"><span>Type</span><span class="req-val">${isProduct?'Product':'Non-Product'}</span></div>
+      <div class="req-row"><span>Level</span><span class="req-val">${levelLabel}</span></div>
+      <div class="req-row"><span>Modality</span><span class="req-val">${cfg.label}</span></div>
+      <div class="req-row"><span>Key Tool</span><span class="req-val">${tool}</span></div>
+      <div class="req-row"><span>SPOC roles</span><span class="req-val">${spocRoles.join(' / ')}</span></div>
+      <div class="req-row"><span>SPOC func. min</span><span class="req-val">${r.funcMin||'—'}</span></div>
+      <div class="req-row"><span>SPOC ID min</span><span class="req-val">${r.idMin||'—'}</span></div>
+      <div class="req-row"><span>SPOC tool min</span><span class="req-val">${r.toolMin||'—'}</span></div>
+      <div class="req-row"><span>MM slot</span><span class="req-val">${mmLabel}</span></div>
+      <div class="req-row"><span>Medical Writer</span><span class="req-val">${includeMW?(isProduct?'Required':'Optional'):'Excluded'}</span></div>
+      <div class="req-row"><span>QAC</span><span class="req-val">${includeQAC?'Included':'Excluded'}</span></div>
+    </div>`;
+  document.getElementById('requirementsDisplay').style.display = 'block';
+
+  activeTeamNames = new Set(teams.flatMap(t => t.map(m => m.person.name)));
+  matcherActive = true;
+  renderSuggestions(teams, tool);
+  render();
+}
+
+function renderSuggestions(teams, tool) {
+  const area = document.getElementById('suggestionsArea');
+  area.querySelectorAll('.suggestion-card, .suggestions-title').forEach(el => el.remove());
+  const noMsg = document.getElementById('noSuggestionsMsg');
+
+  if (teams.length === 0) {
+    noMsg.innerHTML = 'No qualifying team combinations found. Try <strong>Level 1</strong> or a different modality.';
+    noMsg.style.display = 'block';
+    return;
+  }
+  noMsg.style.display = 'none';
+
+  const title = document.createElement('div');
+  title.className = 'suggestions-title';
+  title.textContent = `${teams.length} Suggested Team${teams.length>1?'s':''}`;
+  area.appendChild(title);
+
+  teams.forEach((team, idx) => {
+    const avg = Math.round(team.reduce((s,m)=>s+m.person.score,0)/team.length*100);
+    const scClass = avg>=85?'score-high':avg>=60?'score-med':'score-low';
+    const card = document.createElement('div');
+    card.className = 'suggestion-card';
+    const rows = team.map(m => {
+      const lv = tool ? (m.person.skills[tool]||'—') : null;
+      return `<div class="team-member-row">
+        <span class="team-role-label">${m.label}</span>
+        <span class="team-member-name">${m.person.name}</span>
+        ${lv ? `<span class="team-skill-tag skill-${lv}" title="${tool}: ${lv}">${lv}</span>` : ''}
+      </div>`;
+    }).join('');
+    card.innerHTML = `<div class="suggestion-card-header">
+        <span class="suggestion-card-title">Team ${idx+1}</span>
+        <span class="score-badge ${scClass}">${avg}% fit</span>
+      </div>${rows}`;
+    area.appendChild(card);
+  });
+}
+
+function clearMatcher() {
+  matcherActive = false;
+  activeTeamNames = new Set();
+  activeEligibleNames = new Set();
+  eligibleSkillSet = {};
+  document.getElementById('noSuggestionsMsg').innerHTML = 'Set project specs above and click <strong>Find Teams</strong> to see suggested combinations.';
+  document.getElementById('noSuggestionsMsg').style.display = 'block';
+  document.getElementById('requirementsDisplay').style.display = 'none';
+  document.querySelectorAll('.suggestion-card, .suggestions-title').forEach(el => el.remove());
+  render();
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+const roles    = [...new Set(people.map(p=>p.role).filter(Boolean))].sort();
+const managers = [...new Set(people.map(p=>p.manager).filter(Boolean))].sort();
+roles.forEach(r    => { const o=document.createElement('option'); o.value=r; o.textContent=r; document.getElementById('roleFilter').appendChild(o); });
+managers.forEach(m => { const o=document.createElement('option'); o.value=m; o.textContent=m; document.getElementById('managerFilter').appendChild(o); });
+
+function getFiltered() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const r = document.getElementById('roleFilter').value;
+  const m = document.getElementById('managerFilter').value;
+  return people.filter(p => {
+    if (q && !p.name.toLowerCase().includes(q) && !p.role.toLowerCase().includes(q)) return false;
+    if (r && p.role !== r) return false;
+    if (m && p.manager !== m) return false;
+    return true;
+  });
+}
+
+// ── TABLE ─────────────────────────────────────────────────────────────────────
+function buildTableHead() {
+  const head = document.getElementById('tableHead');
+  head.innerHTML = '';
+  const catRow = document.createElement('tr');
+  catRow.className = 'cat-row';
+  const ph = document.createElement('th');
+  ph.className = 'person-col';
+  catRow.appendChild(ph);
+  [
+    { name:'Transferable Skills', count:skillCategories.transferable.length, cls:'category-transferable' },
+    { name:'Core Skills',         count:skillCategories.core.length,         cls:'category-core' },
+    { name:'Technical Skills',    count:skillCategories.technical.length,    cls:'category-technical' },
+  ].forEach(c => {
+    const th = document.createElement('th');
+    th.colSpan=c.count; th.className=`category-header ${c.cls}`; th.textContent=c.name;
+    catRow.appendChild(th);
+  });
+  head.appendChild(catRow);
+
+  const skillRow = document.createElement('tr');
+  skillRow.className = 'skill-row';
+  const sp = document.createElement('th');
+  sp.className = 'person-col-spacer';
+  skillRow.appendChild(sp);
+  allSkills.forEach((s,i) => {
+    const th = document.createElement('th');
+    const lastT = i===skillCategories.transferable.length-1;
+    const lastC = i===skillCategories.transferable.length+skillCategories.core.length-1;
+    const cat = i<skillCategories.transferable.length?'col-transferable':i<skillCategories.transferable.length+skillCategories.core.length?'col-core':'col-technical';
+    th.className = cat+(lastT||lastC?' col-divider':'');
+    th.title = s;
+    const w = document.createElement('div');
+    w.className = 'skill-name-wrap'; w.textContent = s;
+    th.appendChild(w); skillRow.appendChild(th);
+  });
+  head.appendChild(skillRow);
+}
+
+function buildTableBody(filtered) {
+  const body = document.getElementById('tableBody');
+  body.innerHTML = '';
+  filtered.forEach(p => {
+    const inTeam     = matcherActive && activeTeamNames.has(p.name);
+    const isEligible = matcherActive && activeEligibleNames.has(p.name);
+    const tr = document.createElement('tr');
+    if (inTeam) tr.className = 'highlighted';
+
+    const tdI = document.createElement('td');
+    tdI.className = 'person-info';
+    tdI.innerHTML = `<div class="person-name">${p.name}${inTeam?' <span style="color:var(--green);font-size:10px">✦</span>':''}</div><div class="person-role">${p.role}</div><div class="person-manager">${p.manager||''}</div>`;
+    tr.appendChild(tdI);
+
+    allSkills.forEach((skill,i) => {
+      const lastT = i===skillCategories.transferable.length-1;
+      const lastC = i===skillCategories.transferable.length+skillCategories.core.length-1;
+      const level = p.skills[skill];
+      const td = document.createElement('td');
+      if (lastT||lastC) td.className='td-divider';
+      if (level) {
+        const cell = document.createElement('div');
+        const hilite = isEligible && eligibleSkillSet[p.name]?.has(skill);
+        cell.className = `skill-cell skill-${level}${hilite?' eligible':''}`;
+        cell.textContent = levelAbbr[level]||'';
+        cell.addEventListener('mouseenter', e=>showTooltip(e,p.name,skill,level));
+        cell.addEventListener('mouseleave', hideTooltip);
+        td.appendChild(cell);
+      }
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+}
+
+// ── CARDS ─────────────────────────────────────────────────────────────────────
+function buildCards(filtered) {
+  const grid = document.getElementById('cardsGrid');
+  grid.innerHTML = '';
+  filtered.forEach(p => {
+    const inTeam = matcherActive && activeTeamNames.has(p.name);
+    const card = document.createElement('div');
+    card.className = 'person-card'+(inTeam?' highlighted':'');
+    let groupsHtml = '';
+    [
+      {key:'transferable',label:'Transferable Skills',list:skillCategories.transferable},
+      {key:'core',        label:'Core Skills',        list:skillCategories.core},
+      {key:'technical',   label:'Technical Skills',   list:skillCategories.technical},
+    ].forEach(g => {
+      const rel = g.list.filter(s=>p.skills[s]);
+      if (!rel.length) return;
+      groupsHtml += `<div><div class="skill-group-title ${g.key}">${g.label}</div><div class="skill-tags">${rel.map(s=>`<span class="skill-tag tag-${p.skills[s]}">${s}</span>`).join('')}</div></div>`;
+    });
+    card.innerHTML = `<div><div class="card-name">${p.name}</div>
+      <div class="card-meta">
+        <span class="badge badge-role">${p.role}</span>
+        ${p.manager?`<span class="badge badge-manager">↑ ${p.manager}</span>`:''}
+        ${inTeam?`<span class="badge" style="background:rgba(34,201,136,.15);color:var(--green)">✦ Suggested</span>`:''}
+      </div></div>
+      <div class="skill-groups">${Object.keys(p.skills).length?groupsHtml:'<div style="color:var(--muted);font-size:11px;margin-top:10px">No skills data available</div>'}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function updateStats(filtered) {
+  document.getElementById('statPeople').textContent   = filtered.length;
+  document.getElementById('statRoles').textContent    = new Set(filtered.map(p=>p.role)).size;
+  document.getElementById('statManagers').textContent = new Set(filtered.map(p=>p.manager).filter(Boolean)).size;
+  document.getElementById('statExperts').textContent  = filtered.reduce((s,p)=>s+Object.values(p.skills).filter(v=>v==='Expert').length,0);
+}
+function render() {
+  const f = getFiltered();
+  updateStats(f);
+  if (currentView==='grid') buildTableBody(f);
+  else buildCards(f);
+}
+let currentView = 'grid';
+function setView(v) {
+  currentView = v;
+  document.getElementById('gridView').style.display  = v==='grid'?'block':'none';
+  document.getElementById('cardView').style.display  = v==='cards'?'block':'none';
+  document.querySelectorAll('.view-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&v==='grid')||(i===1&&v==='cards')));
+  render();
+}
+
+// ── TOOLTIP ───────────────────────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+function showTooltip(e,name,skill,level) {
+  tooltip.innerHTML=`<strong>${level}</strong>${name}<br><span style="color:var(--muted)">${skill}</span>`;
+  tooltip.classList.add('show'); moveTooltip(e);
+}
+function hideTooltip() { tooltip.classList.remove('show'); }
+document.addEventListener('mousemove', e=>{ if(tooltip.classList.contains('show')) moveTooltip(e); });
+function moveTooltip(e) {
+  let x=e.clientX+14, y=e.clientY+14;
+  if(x+230>window.innerWidth)  x=e.clientX-244;
+  if(y+70 >window.innerHeight) y=e.clientY-80;
+  tooltip.style.left=x+'px'; tooltip.style.top=y+'px';
+}
+
+document.getElementById('search').addEventListener('input', render);
+document.getElementById('roleFilter').addEventListener('change', render);
+document.getElementById('managerFilter').addEventListener('change', render);
+
+buildTableHead();
+updateStats(people);
+buildTableBody(people);
+</script>
+</body>
+</html>
