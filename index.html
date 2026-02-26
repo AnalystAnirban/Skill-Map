@@ -1,59 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<style>
+  /* Self-contained font stack — no external dependencies */
+  .font-serif { font-family: 'Georgia', 'Times New Roman', serif; }
+  :root {
+    --font-sans: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-serif: 'Georgia', 'Times New Roman', serif;
+  }
+</style>
 <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- SharePoint/Teams iframe compatibility -->
+<meta http-equiv="Content-Security-Policy" content="frame-ancestors *;">
 <title>Team Skill Map</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
 <style>
   :root {
-    --bg: #0d0f14; --surface: #161921; --surface2: #1e2230; --border: #2a2f42;
-    --text: #e8eaf0; --muted: #6b7494; --accent: #7c6af7; --accent2: #e85d8a; --green: #22c988;
-    --novice: #3a3f5c; --foundational: #2a4a6b; --intermediate: #1e5e7a; --advanced: #1a7a5e; --expert: #7c6af7;
-    --novice-t: #8899cc; --foundational-t: #5ba3d6; --intermediate-t: #3db8d6; --advanced-t: #3dd6a6; --expert-t: #b8b0ff;
+    /* Lilly Brand Colors */
+    --lilly-red:     #D52B1E;
+    --lilly-red-dk:  #B71C1C;
+    --lilly-red-lt:  #F9E8E7;
+    --lilly-red-mid: #EF5350;
+
+    /* UI Palette — clean light theme */
+    --bg:       #F4F5F7;
+    --surface:  #FFFFFF;
+    --surface2: #F0F1F3;
+    --border:   #DDE1E8;
+    --text:     #1A1F2E;
+    --muted:    #6B7280;
+    --accent:   #D52B1E;
+    --accent2:  #B71C1C;
+    --green:    #16A34A;
+
+    /* Navy for secondary elements */
+    --navy:     #1E2D4E;
+    --navy-lt:  #E8EBF2;
+
+    /* Proficiency level colors — light theme */
+    --novice:        #F3F4F6;
+    --foundational:  #DBEAFE;
+    --intermediate:  #D1FAE5;
+    --advanced:      #FEF3C7;
+    --expert:        #D52B1E;
+
+    --novice-t:        #6B7280;
+    --foundational-t:  #1D4ED8;
+    --intermediate-t:  #065F46;
+    --advanced-t:      #92400E;
+    --expert-t:        #FFFFFF;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  body { font-family: var(--font-sans); background: var(--bg); color: var(--text); min-height: 100vh; }
 
   header {
-    padding: 24px 40px 18px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+    padding: 0; border-bottom: 1px solid var(--border);
+    display: flex; align-items: stretch; justify-content: space-between; gap: 0; flex-wrap: wrap;
+    background: var(--surface);
+  }
+  .header-brand {
+    background: var(--lilly-red);
+    padding: 20px 32px;
+    display: flex; flex-direction: column; justify-content: center;
+    min-width: 220px;
+  }
+  .header-brand .lilly-logo {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 36px;
+    color: white;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .header-brand .lilly-sub {
+    font-size: 10px; color: rgba(255,255,255,0.75); text-transform: uppercase;
+    letter-spacing: 0.12em; margin-top: 3px; font-weight: 500;
+  }
+  .header-main {
+    flex: 1; padding: 16px 32px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
   }
   header h1 {
-    font-family: 'DM Serif Display', serif; font-size: clamp(22px,3vw,38px);
-    letter-spacing: -0.02em; line-height: 1;
-    background: linear-gradient(135deg, var(--text) 40%, var(--accent));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-family: var(--font-serif); font-size: clamp(18px,2.5vw,28px);
+    letter-spacing: -0.01em; line-height: 1; color: var(--navy);
   }
-  header p { color: var(--muted); font-size: 12px; margin-top: 5px; }
+  header p { color: var(--muted); font-size: 12px; margin-top: 4px; }
   .top-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   select, input {
-    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
-    padding: 7px 12px; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 12px; border-radius: 6px; font-family: var(--font-sans);
     font-size: 12px; outline: none; cursor: pointer; transition: border-color 0.2s;
   }
-  select:hover, input:hover, select:focus { border-color: var(--accent); }
+  select:hover, input:hover, select:focus { border-color: var(--lilly-red); }
   input { width: 170px; }
   input::placeholder { color: var(--muted); }
   .view-btns { display: flex; gap: 3px; }
   .view-btn {
-    background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
-    padding: 7px 13px; border-radius: 8px; font-size: 12px; cursor: pointer;
-    transition: all 0.2s; font-family: 'DM Sans', sans-serif; font-weight: 500;
+    background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+    padding: 7px 13px; border-radius: 6px; font-size: 12px; cursor: pointer;
+    transition: all 0.2s; font-family: var(--font-sans); font-weight: 500;
   }
-  .view-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .view-btn.active { background: var(--lilly-red); border-color: var(--lilly-red); color: white; }
 
   .stat-bar {
-    display: flex; gap: 20px; padding: 10px 40px;
-    background: var(--surface); border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center;
+    display: flex; gap: 0; padding: 0;
+    background: var(--navy); border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: stretch;
   }
-  .stat { display: flex; flex-direction: column; gap: 1px; }
-  .stat-val { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--accent); }
-  .stat-label { font-size: 10px; color: var(--muted); }
+  .stat {
+    display: flex; flex-direction: column; gap: 1px; padding: 12px 28px;
+    border-right: 1px solid rgba(255,255,255,0.1);
+  }
+  .stat-val { font-family: var(--font-serif); font-size: 22px; color: white; }
+  .stat-label { font-size: 10px; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.06em; }
 
   .legend {
-    display: flex; gap: 14px; padding: 8px 40px;
+    display: flex; gap: 14px; padding: 8px 32px;
     border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center;
+    background: var(--surface);
   }
   .legend-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-right: 2px; }
   .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
@@ -71,56 +136,58 @@
     position: sticky; top: 0;
   }
   .panel-header {
-    padding: 14px 18px 10px; border-bottom: 1px solid var(--border);
+    padding: 14px 18px 10px; border-bottom: 3px solid var(--lilly-red);
     display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+    background: var(--lilly-red-lt);
   }
-  .panel-title { font-family: 'DM Serif Display', serif; font-size: 15px; }
-  .panel-badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; background: rgba(124,106,247,0.2); color: var(--accent); font-weight: 600; }
+  .panel-title { font-family: var(--font-serif); font-size: 15px; color: var(--lilly-red-dk); }
+  .panel-badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; background: var(--lilly-red); color: white; font-weight: 600; }
 
-  .panel-section { padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .panel-section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; }
+  .panel-section { padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--surface); }
+  .panel-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--lilly-red); margin-bottom: 10px; }
   .panel-field { margin-bottom: 9px; }
   .panel-field:last-child { margin-bottom: 0; }
   .panel-field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
   .panel-field select { width: 100%; }
 
-  .btn-row { display: flex; gap: 8px; padding: 12px 18px; flex-shrink: 0; }
+  .btn-row { display: flex; gap: 8px; padding: 12px 18px; flex-shrink: 0; background: var(--lilly-red-lt); border-bottom: 1px solid var(--border); }
   .run-btn {
-    flex: 1; padding: 9px 0; border-radius: 9px;
-    background: linear-gradient(135deg, var(--accent), #a78bfa);
-    color: white; font-family: 'DM Sans', sans-serif; font-weight: 600;
-    font-size: 12px; border: none; cursor: pointer; transition: opacity 0.2s;
+    flex: 1; padding: 9px 0; border-radius: 6px;
+    background: var(--lilly-red);
+    color: white; font-family: var(--font-sans); font-weight: 600;
+    font-size: 12px; border: none; cursor: pointer; transition: background 0.2s;
+    letter-spacing: 0.01em;
   }
-  .run-btn:hover { opacity: 0.85; }
+  .run-btn:hover { background: var(--lilly-red-dk); }
   .clear-btn {
-    flex: 1; padding: 9px 0; border-radius: 9px;
-    background: var(--surface2); color: var(--muted); font-family: 'DM Sans', sans-serif;
+    flex: 1; padding: 9px 0; border-radius: 6px;
+    background: white; color: var(--muted); font-family: var(--font-sans);
     font-weight: 500; font-size: 12px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
   }
-  .clear-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .clear-btn:hover { border-color: var(--lilly-red); color: var(--lilly-red); }
 
   .suggestions-area { padding: 0 18px 20px; flex: 1; }
   .suggestions-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 14px 0 8px; }
 
   .req-summary {
-    background: rgba(124,106,247,0.07); border: 1px solid rgba(124,106,247,0.2);
+    background: var(--lilly-red-lt); border: 1px solid rgba(213,43,30,0.2);
     border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: 11px;
   }
-  .req-summary strong { color: var(--accent); display: block; margin-bottom: 5px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .req-summary strong { color: var(--lilly-red-dk); display: block; margin-bottom: 5px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
   .req-row { display: flex; justify-content: space-between; color: var(--muted); margin-bottom: 2px; }
-  .req-val { color: var(--text); font-weight: 500; }
+  .req-val { color: var(--text); font-weight: 600; }
 
   .suggestion-card {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px; margin-bottom: 8px; transition: border-color 0.2s;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; margin-bottom: 8px; transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .suggestion-card:hover { border-color: var(--accent); }
+  .suggestion-card:hover { border-color: var(--lilly-red); box-shadow: 0 2px 8px rgba(213,43,30,0.08); }
   .suggestion-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .suggestion-card-title { font-weight: 600; font-size: 12px; }
+  .suggestion-card-title { font-weight: 700; font-size: 12px; color: var(--navy); }
   .score-badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 700; }
-  .score-high { background: rgba(34,201,136,0.15); color: var(--green); }
-  .score-med  { background: rgba(232,168,124,0.15); color: #e8a87c; }
-  .score-low  { background: rgba(232,93,138,0.15);  color: var(--accent2); }
+  .score-high { background: #DCFCE7; color: #166534; }
+  .score-med  { background: #FEF9C3; color: #854D0E; }
+  .score-low  { background: #FEE2E2; color: #991B1B; }
 
   .team-member-row {
     display: flex; align-items: center; padding: 4px 0;
@@ -131,29 +198,29 @@
   .team-member-name { font-weight: 500; flex: 1; padding: 0 6px; }
   .team-skill-tag { font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
 
-  .no-suggestions { color: var(--muted); font-size: 12px; text-align: center; padding: 20px 4px; line-height: 1.7; }
+  .no-suggestions { color: var(--muted); font-size: 12px; text-align: center; padding: 20px 4px; line-height: 1.7; background: transparent; }
   .no-suggestions strong { color: var(--text); }
 
   /* Main area */
-  .main-content { flex: 1; min-width: 0; padding: 18px 28px 40px; overflow-x: hidden; }
+  .main-content { flex: 1; min-width: 0; padding: 18px 28px 40px; overflow-x: hidden; background: var(--bg); }
   .heatmap-wrap { overflow-x: auto; }
   table { border-collapse: collapse; font-size: 12px; table-layout: auto; }
 
   thead tr.cat-row th {
-    position: sticky; top: 0; z-index: 2; background: var(--bg);
+    position: sticky; top: 0; z-index: 2; background: var(--surface);
     padding: 10px 6px 8px; text-align: center; white-space: nowrap;
     border-bottom: 2px solid var(--border);
   }
   thead tr.cat-row th.person-col {
-    text-align: left; min-width: 185px; position: sticky; left: 0; z-index: 4; background: var(--bg);
+    text-align: left; min-width: 185px; position: sticky; left: 0; z-index: 4; background: var(--surface);
   }
   thead tr.skill-row th {
-    position: sticky; top: 43px; z-index: 2; background: var(--bg);
+    position: sticky; top: 43px; z-index: 2; background: var(--surface);
     padding: 6px 6px 7px; vertical-align: middle; border-bottom: 1px solid var(--border);
     width: 82px; min-width: 82px; max-width: 82px;
   }
   thead tr.skill-row th.person-col-spacer {
-    position: sticky; left: 0; top: 43px; z-index: 4; background: var(--bg);
+    position: sticky; left: 0; top: 43px; z-index: 4; background: var(--surface);
     width: 185px; min-width: 185px;
   }
   .skill-name-wrap {
@@ -161,33 +228,35 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     max-width: 76px; transition: color 0.15s; cursor: default;
   }
-  thead tr.skill-row th:hover .skill-name-wrap { color: var(--text); }
-  .category-header { font-family: 'DM Serif Display', serif; font-size: 13px; letter-spacing: 0.02em; padding: 6px 10px 8px; border-radius: 6px 6px 0 0; }
-  .category-transferable { color: #7ca8e8 !important; background: rgba(124,168,232,0.06) !important; border-bottom: 2px solid rgba(124,168,232,0.35) !important; }
-  .category-core         { color: #e8a87c !important; background: rgba(232,168,124,0.06) !important; border-bottom: 2px solid rgba(232,168,124,0.35) !important; }
-  .category-technical    { color: #7ce8b8 !important; background: rgba(124,232,184,0.06) !important; border-bottom: 2px solid rgba(124,232,184,0.35) !important; }
-  .col-core .skill-name-wrap      { color: rgba(232,168,124,0.75); }
-  .col-technical .skill-name-wrap { color: rgba(124,232,184,0.75); }
+  thead tr.skill-row th:hover .skill-name-wrap { color: var(--lilly-red); }
+  .category-header { font-family: var(--font-serif); font-size: 13px; letter-spacing: 0.02em; padding: 6px 10px 8px; border-radius: 6px 6px 0 0; }
+  .category-transferable { color: var(--navy) !important; background: var(--navy-lt) !important; border-bottom: 2px solid var(--navy) !important; }
+  .category-core         { color: var(--lilly-red-dk) !important; background: var(--lilly-red-lt) !important; border-bottom: 2px solid var(--lilly-red) !important; }
+  .category-technical    { color: #065F46 !important; background: #ECFDF5 !important; border-bottom: 2px solid #16A34A !important; }
+  .col-transferable .skill-name-wrap { color: var(--navy); }
+  .col-core .skill-name-wrap      { color: var(--lilly-red-dk); }
+  .col-technical .skill-name-wrap { color: #065F46; }
   .col-divider { border-right: 2px solid var(--border) !important; }
   .td-divider  { border-right: 2px solid var(--border); }
 
   tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
-  tbody tr:nth-child(even) td { background: rgba(255,255,255,0.012); }
-  tbody tr:hover td { background: var(--surface) !important; }
-  tbody tr.highlighted { background: rgba(34,201,136,0.05) !important; }
-  tbody tr.highlighted td.person-info { border-left: 3px solid var(--green); }
+  tbody tr:nth-child(even) td { background: #FAFBFC; }
+  tbody tr:hover td { background: #FEF2F2 !important; }
+  tbody tr.highlighted { background: #DCFCE7 !important; }
+  tbody tr.highlighted td { background: #DCFCE7 !important; }
+  tbody tr.highlighted td.person-info { border-left: 3px solid var(--green); background: #DCFCE7 !important; }
 
   td { padding: 4px 3px; text-align: center; vertical-align: middle; width: 82px; min-width: 82px; max-width: 82px; }
   td.person-info {
-    text-align: left; position: sticky; left: 0; background: var(--bg); z-index: 1;
-    min-width: 185px; border-right: 1px solid var(--border); padding: 5px 10px;
+    text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 1;
+    min-width: 185px; border-right: 2px solid var(--border); padding: 5px 10px;
   }
-  tbody tr.highlighted td.person-info { background: rgba(34,201,136,0.04); }
-  tbody tr:hover td.person-info { background: var(--surface) !important; }
+  tbody tr:nth-child(even) td.person-info { background: #FAFBFC; }
+  tbody tr:hover td.person-info { background: #FEF2F2 !important; }
 
-  .person-name { font-weight: 500; font-size: 12px; }
-  .person-role { font-size: 10px; color: var(--muted); margin-top: 1px; }
-  .person-manager { font-size: 10px; color: #3a3f5c; margin-top: 1px; }
+  .person-name { font-weight: 600; font-size: 12px; color: var(--navy); }
+  .person-role { font-size: 10px; color: var(--lilly-red); margin-top: 1px; font-weight: 500; }
+  .person-manager { font-size: 10px; color: var(--muted); margin-top: 1px; }
 
   .skill-cell {
     width: 26px; height: 26px; border-radius: 5px;
@@ -196,32 +265,32 @@
     transition: transform 0.15s, box-shadow 0.15s; margin: 1px auto;
   }
   .skill-cell:hover { transform: scale(1.25); box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
-  .skill-cell.eligible { outline: 2px solid rgba(34,201,136,0.7); outline-offset: 1px; }
-  .skill-Novice       { background: var(--novice);       color: var(--novice-t); }
+  .skill-cell.eligible { outline: 2px solid var(--lilly-red); outline-offset: 1px; }
+  .skill-Novice       { background: var(--novice);       color: var(--novice-t);       border: 1px solid var(--border); }
   .skill-Foundational { background: var(--foundational); color: var(--foundational-t); }
   .skill-Intermediate { background: var(--intermediate); color: var(--intermediate-t); }
   .skill-Advanced     { background: var(--advanced);     color: var(--advanced-t); }
-  .skill-Expert       { background: var(--expert);       color: white; }
+  .skill-Expert       { background: var(--expert);       color: var(--expert-t); }
 
   /* Card view */
   .card-view { display: none; }
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px,1fr)); gap: 14px; }
   .person-card {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 18px; transition: border-color 0.2s, transform 0.2s;
+    border-radius: 8px; padding: 18px; transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .person-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .person-card.highlighted { border-color: var(--green) !important; background: rgba(34,201,136,0.03); }
-  .card-name { font-family: 'DM Serif Display', serif; font-size: 17px; }
+  .person-card:hover { border-color: var(--lilly-red); box-shadow: 0 3px 12px rgba(213,43,30,0.1); }
+  .person-card.highlighted { border-color: var(--green) !important; background: #F0FDF4; }
+  .card-name { font-family: var(--font-serif); font-size: 17px; color: var(--navy); }
   .card-meta { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
-  .badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 500; }
-  .badge-role    { background: rgba(124,106,247,0.2); color: var(--accent); }
-  .badge-manager { background: var(--surface2); color: var(--muted); }
+  .badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 600; }
+  .badge-role    { background: var(--lilly-red-lt); color: var(--lilly-red-dk); }
+  .badge-manager { background: var(--navy-lt); color: var(--navy); }
   .skill-groups { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
   .skill-group-title { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
-  .skill-group-title.transferable { color: #7ca8e8; }
-  .skill-group-title.core { color: #e8a87c; }
-  .skill-group-title.technical { color: #7ce8b8; }
+  .skill-group-title.transferable { color: var(--navy); }
+  .skill-group-title.core { color: var(--lilly-red-dk); }
+  .skill-group-title.technical { color: #065F46; }
   .skill-tags { display: flex; flex-wrap: wrap; gap: 4px; }
   .skill-tag { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 500; }
   .tag-Novice       { background: var(--novice);       color: var(--novice-t); }
@@ -242,21 +311,23 @@
     content: ""; position: absolute; height: 14px; width: 14px;
     left: 2px; top: 2px; background: var(--muted); border-radius: 50%; transition: 0.2s;
   }
-  .toggle-switch input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+  .toggle-switch input:checked + .toggle-slider { background: var(--lilly-red); border-color: var(--lilly-red); }
   .toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); background: white; }
 
   .tooltip {
-    position: fixed; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px 12px; font-size: 11px;
+    position: fixed; background: var(--navy); border: 1px solid var(--navy);
+    border-radius: 6px; padding: 8px 12px; font-size: 11px; color: white;
     pointer-events: none; z-index: 999; opacity: 0; transition: opacity 0.12s; max-width: 220px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
   .tooltip.show { opacity: 1; }
-  .tooltip strong { display: block; color: var(--accent); margin-bottom: 2px; }
+  .tooltip strong { display: block; color: #FCA5A5; margin-bottom: 2px; }
 
   @media (max-width: 860px) {
     .app-layout { flex-direction: column; }
     .project-panel { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); }
-    header, .main-content { padding-left: 16px; padding-right: 16px; }
+    .header-brand { min-width: unset; }
+    .main-content { padding-left: 16px; padding-right: 16px; }
     .legend, .stat-bar { padding-left: 16px; padding-right: 16px; }
   }
 </style>
@@ -277,6 +348,7 @@
       <button class="view-btn active" onclick="setView('grid')">Grid</button>
       <button class="view-btn" onclick="setView('cards')">Cards</button>
     </div>
+  </div>
   </div>
 </header>
 
@@ -414,7 +486,7 @@
 
 <script>
 // ── DATA ──────────────────────────────────────────────────────────────────────
-const people = [{"name":"Aarohi Ranadive","manager":"George Tobias","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Intermediate","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Intermediate","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Intermediate","Adobe Captivate":"Novice","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Novice","Powtoon":"Intermediate"}},{"name":"APUURVA M. S.","manager":"Priyanka Sharma","role":"Instructional Designer","skills":{}},{"name":"Brinda Krishna","manager":"George Tobias","role":"Instructional Designer","skills":{"Agility":"Advanced","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Advanced","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Advanced","Project Management":"Advanced","Performance Consulting":"Advanced","Customer/External Focus":"Advanced","Instructional Design (Learning Theories & ADDIE)":"Advanced","Editorial Standards & Document Control":"Advanced","Adobe Acrobat":"Intermediate","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Novice","Adobe Illustrator":"Novice","Adobe Photoshop":"Novice","Articulate Rise":"Advanced","Grammarly":"Expert","Microsoft Excel":"Expert","Power BI":"Intermediate","Smartsheet":"Advanced","Training Arcade":"Advanced"}},{"name":"Devaiah PC","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Adobe Acrobat":"Foundational","Adobe Captivate":"Novice","Adobe Firefly":"Novice","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Foundational","Grammarly":"Advanced","Microsoft Excel":"Advanced","Smartsheet":"Foundational","Training Arcade":"Novice","Powtoon":"Foundational"}},{"name":"Harsh Gandhi","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Intermediate","Project Management":"Foundational","Customer/External Focus":"Intermediate","Instructional Design (Learning Theories & ADDIE)":"Advanced","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Intermediate","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Novice","Powtoon":"Intermediate"}},{"name":"Janani Balasundar","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Agility":"Advanced","Business Acumen":"Foundational","Communication":"Advanced","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Advanced","Decision-Making":"Foundational","Project Management":"Intermediate","Performance Consulting":"Foundational","Customer/External Focus":"Intermediate","Instructional Design (Learning Theories & ADDIE)":"Advanced","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Intermediate","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Intermediate","Smartsheet":"Intermediate","Training Arcade":"Intermediate","Powtoon":"Advanced"}},{"name":"John Anthraper","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Advanced","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Performance Consulting":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Intermediate","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Intermediate","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Intermediate","Articulate Storyline":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Intermediate","Smartsheet":"Intermediate","Training Arcade":"Foundational","Powtoon":"Advanced"}},{"name":"Lakshmi A","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Agility":"Foundational","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Foundational","Adobe Acrobat":"Foundational","Adobe Captivate":"Novice","Adobe Firefly":"Novice","Articulate Rise":"Intermediate","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Novice","Powtoon":"Foundational"}},{"name":"Nidhi Chaurasia","manager":"George Tobias","role":"Instructional Designer","skills":{}},{"name":"Pruthvi Avadhani H A","manager":"George Tobias","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Intermediate","Decision-Making":"Intermediate","Project Management":"Intermediate","Performance Consulting":"Intermediate","Customer/External Focus":"Intermediate","Instructional Design (Learning Theories & ADDIE)":"Advanced","Editorial Standards & Document Control":"Advanced","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Intermediate","Microsoft Excel":"Intermediate","Smartsheet":"Intermediate","Training Arcade":"Advanced","Powtoon":"Advanced"}},{"name":"Rashi Nagelia","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Intermediate","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Adobe Captivate":"Novice","Adobe Firefly":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Foundational","Powtoon":"Intermediate"}},{"name":"Rhea Ann Expidite","manager":"Priya Jeetkumar Makadia","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Intermediate","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Intermediate","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Intermediate","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Foundational","Powtoon":"Foundational"}},{"name":"Sneha Bhowmick","manager":"George Tobias","role":"Instructional Designer","skills":{"Agility":"Advanced","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Advanced","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Advanced","Project Management":"Advanced","Performance Consulting":"Intermediate","Customer/External Focus":"Advanced","Instructional Design (Learning Theories & ADDIE)":"Expert","Editorial Standards & Document Control":"Advanced","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Expert","Articulate Storyline":"Advanced","Grammarly":"Advanced","Microsoft Excel":"Foundational","Smartsheet":"Intermediate","Training Arcade":"Advanced","Powtoon":"Advanced"}},{"name":"Tarun Pal","manager":"Priyanka Sharma","role":"Instructional Designer","skills":{}},{"name":"Nabarun Deb","manager":"Cicilyrose Anthony","role":"Editor","skills":{"Agility":"Foundational","Business Acumen":"Novice","Communication":"Foundational","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Novice","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Novice"}},{"name":"Neena Gopi","manager":"Cicilyrose Anthony","role":"Editor","skills":{"Agility":"Foundational","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Intermediate","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational"}},{"name":"Similu Saji","manager":"Cicilyrose Anthony","role":"Editor","skills":{"Agility":"Foundational","Business Acumen":"Novice","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Novice","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational"}},{"name":"Harpreet Kaur","manager":"Harsha C","role":"Medical Writer","skills":{"Agility":"Advanced","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Intermediate","Project Management":"Advanced","Performance Consulting":"Foundational","Customer/External Focus":"Intermediate","Editorial Standards & Document Control":"Advanced","Medical Writing (Therapeutic Areas & References)":"Advanced","Adobe Acrobat":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Intermediate","Power BI":"Foundational"}},{"name":"Sai ramarathinam","manager":"Harsha C","role":"Medical Writer","skills":{"Agility":"Advanced","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Intermediate","Project Management":"Advanced","Customer/External Focus":"Intermediate","Editorial Standards & Document Control":"Advanced","Medical Writing (Therapeutic Areas & References)":"Advanced","Adobe Acrobat":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Intermediate","Power BI":"Foundational"}},{"name":"Namita Gowtham","manager":"Harsha C","role":"Medical Writer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Intermediate","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Advanced","Medical Writing (Therapeutic Areas & References)":"Advanced","Adobe Acrobat":"Foundational","Grammarly":"Advanced","Microsoft Excel":"Foundational"}},{"name":"Meera Mehta","manager":"Harsha C","role":"Medical Writer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Editorial Standards & Document Control":"Intermediate","Medical Writing (Therapeutic Areas & References)":"Intermediate","Adobe Acrobat":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational"}},{"name":"Priyanshu Bose","manager":"Harsha C","role":"Multimedia Specialist","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Intermediate","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Captivate":"Foundational","Adobe Firefly":"Advanced","Adobe Illustrator":"Advanced","Adobe InDesign":"Intermediate","Adobe Photoshop":"Advanced","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"Mili Raj","manager":"Harsha C","role":"Multimedia Specialist","skills":{"Agility":"Foundational","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Advanced","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Illustrator":"Advanced","Adobe InDesign":"Advanced","Adobe Photoshop":"Advanced","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"Shailesh Garg","manager":"Harsha C","role":"Multimedia Specialist","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Intermediate","Adobe InDesign":"Intermediate","Adobe Photoshop":"Intermediate","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"Shyjith P","manager":"Harsha C","role":"Multimedia Specialist","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Intermediate","Adobe InDesign":"Intermediate","Adobe Photoshop":"Intermediate","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"Padmanaban Vengadarathinam","manager":"Harsha C","role":"Content Developer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe InDesign":"Foundational","Adobe Photoshop":"Foundational","Adobe Premier Pro":"Intermediate","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Microsoft Excel":"Foundational","Powtoon":"Foundational"}},{"name":"Niyas N","manager":"Harsha C","role":"Content Developer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Intermediate","Adobe InDesign":"Intermediate","Adobe Photoshop":"Intermediate","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"JESU DENNIS","manager":"Harsha C","role":"UI/UX","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Expert","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Intermediate","Adobe Illustrator":"Advanced","Adobe InDesign":"Intermediate","Adobe Photoshop":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Grammarly":"Foundational","Smartsheet":"Foundational"}},{"name":"Sanjesh Pratap Singh","manager":"Cicilyrose Anthony","role":"QA","skills":{}}];
+const people = [{"name":"Alex Johnson","manager":"Sarah Mitchell","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Intermediate","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Intermediate","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Intermediate","Adobe Captivate":"Novice","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Novice","Powtoon":"Intermediate"}},{"name":"Priya Sharma","manager":"Nina Kapoor","role":"Instructional Designer","skills":{}},{"name":"Marcus Lee","manager":"Sarah Mitchell","role":"Instructional Designer","skills":{"Agility":"Advanced","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Advanced","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Advanced","Project Management":"Advanced","Performance Consulting":"Advanced","Customer/External Focus":"Advanced","Instructional Design (Learning Theories & ADDIE)":"Advanced","Editorial Standards & Document Control":"Advanced","Adobe Acrobat":"Intermediate","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Novice","Adobe Illustrator":"Novice","Adobe Photoshop":"Novice","Articulate Rise":"Advanced","Grammarly":"Expert","Microsoft Excel":"Expert","Power BI":"Intermediate","Smartsheet":"Advanced","Training Arcade":"Advanced"}},{"name":"Sofia Patel","manager":"Rohan Desai","role":"Instructional Designer","skills":{"Adobe Acrobat":"Foundational","Adobe Captivate":"Novice","Adobe Firefly":"Novice","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Foundational","Grammarly":"Advanced","Microsoft Excel":"Advanced","Smartsheet":"Foundational","Training Arcade":"Novice","Powtoon":"Foundational"}},{"name":"Daniel Kim","manager":"Rohan Desai","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Intermediate","Project Management":"Foundational","Customer/External Focus":"Intermediate","Instructional Design (Learning Theories & ADDIE)":"Advanced","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Intermediate","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Novice","Powtoon":"Intermediate"}},{"name":"Ananya Mehta","manager":"Rohan Desai","role":"Instructional Designer","skills":{"Agility":"Advanced","Business Acumen":"Foundational","Communication":"Advanced","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Advanced","Decision-Making":"Foundational","Project Management":"Intermediate","Performance Consulting":"Foundational","Customer/External Focus":"Intermediate","Instructional Design (Learning Theories & ADDIE)":"Advanced","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Intermediate","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Intermediate","Smartsheet":"Intermediate","Training Arcade":"Intermediate","Powtoon":"Advanced"}},{"name":"Chris Evans","manager":"Rohan Desai","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Advanced","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Performance Consulting":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Intermediate","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Intermediate","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Intermediate","Articulate Storyline":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Intermediate","Smartsheet":"Intermediate","Training Arcade":"Foundational","Powtoon":"Advanced"}},{"name":"Divya Nair","manager":"Rohan Desai","role":"Instructional Designer","skills":{"Agility":"Foundational","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Foundational","Adobe Acrobat":"Foundational","Adobe Captivate":"Novice","Adobe Firefly":"Novice","Articulate Rise":"Intermediate","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Novice","Powtoon":"Foundational"}},{"name":"James Carter","manager":"Sarah Mitchell","role":"Instructional Designer","skills":{}},{"name":"Riya Singh","manager":"Sarah Mitchell","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Intermediate","Decision-Making":"Intermediate","Project Management":"Intermediate","Performance Consulting":"Intermediate","Customer/External Focus":"Intermediate","Instructional Design (Learning Theories & ADDIE)":"Advanced","Editorial Standards & Document Control":"Advanced","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Intermediate","Microsoft Excel":"Intermediate","Smartsheet":"Intermediate","Training Arcade":"Advanced","Powtoon":"Advanced"}},{"name":"Kevin Brooks","manager":"Rohan Desai","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Intermediate","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Adobe Captivate":"Novice","Adobe Firefly":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Foundational","Powtoon":"Intermediate"}},{"name":"Arjun Verma","manager":"Rohan Desai","role":"Instructional Designer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Intermediate","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Intermediate","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Articulate Rise":"Advanced","Articulate Storyline":"Intermediate","Grammarly":"Intermediate","Microsoft Excel":"Foundational","Smartsheet":"Foundational","Training Arcade":"Foundational","Powtoon":"Foundational"}},{"name":"Megan Taylor","manager":"Sarah Mitchell","role":"Instructional Designer","skills":{"Agility":"Advanced","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Advanced","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Advanced","Project Management":"Advanced","Performance Consulting":"Intermediate","Customer/External Focus":"Advanced","Instructional Design (Learning Theories & ADDIE)":"Expert","Editorial Standards & Document Control":"Advanced","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe Photoshop":"Foundational","Articulate Rise":"Expert","Articulate Storyline":"Advanced","Grammarly":"Advanced","Microsoft Excel":"Foundational","Smartsheet":"Intermediate","Training Arcade":"Advanced","Powtoon":"Advanced"}},{"name":"Pooja Iyer","manager":"Nina Kapoor","role":"Instructional Designer","skills":{}},{"name":"Tyler Wilson","manager":"David Okafor","role":"Editor","skills":{"Agility":"Foundational","Business Acumen":"Novice","Communication":"Foundational","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Novice","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Novice"}},{"name":"Nisha Pillai","manager":"David Okafor","role":"Editor","skills":{"Agility":"Foundational","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Intermediate","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational"}},{"name":"Ethan Moore","manager":"David Okafor","role":"Editor","skills":{"Agility":"Foundational","Business Acumen":"Novice","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Novice","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Intermediate","Adobe Acrobat":"Foundational","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational"}},{"name":"Kavya Reddy","manager":"Laura Bennett","role":"Medical Writer","skills":{"Agility":"Advanced","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Intermediate","Project Management":"Advanced","Performance Consulting":"Foundational","Customer/External Focus":"Intermediate","Editorial Standards & Document Control":"Advanced","Medical Writing (Therapeutic Areas & References)":"Advanced","Adobe Acrobat":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Intermediate","Power BI":"Foundational"}},{"name":"Lucas Martin","manager":"Laura Bennett","role":"Medical Writer","skills":{"Agility":"Advanced","Business Acumen":"Intermediate","Communication":"Advanced","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Intermediate","Project Management":"Advanced","Customer/External Focus":"Intermediate","Editorial Standards & Document Control":"Advanced","Medical Writing (Therapeutic Areas & References)":"Advanced","Adobe Acrobat":"Intermediate","Grammarly":"Advanced","Microsoft Excel":"Intermediate","Power BI":"Foundational"}},{"name":"Aisha Khan","manager":"Laura Bennett","role":"Medical Writer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Intermediate","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Intermediate","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Editorial Standards & Document Control":"Advanced","Medical Writing (Therapeutic Areas & References)":"Advanced","Adobe Acrobat":"Foundational","Grammarly":"Advanced","Microsoft Excel":"Foundational"}},{"name":"Ryan Davis","manager":"Laura Bennett","role":"Medical Writer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Editorial Standards & Document Control":"Intermediate","Medical Writing (Therapeutic Areas & References)":"Intermediate","Adobe Acrobat":"Foundational","Grammarly":"Intermediate","Microsoft Excel":"Foundational"}},{"name":"Meena Bose","manager":"Laura Bennett","role":"Multimedia Specialist","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Intermediate","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Captivate":"Foundational","Adobe Firefly":"Advanced","Adobe Illustrator":"Advanced","Adobe InDesign":"Intermediate","Adobe Photoshop":"Advanced","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"Nathan Clark","manager":"Laura Bennett","role":"Multimedia Specialist","skills":{"Agility":"Foundational","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Advanced","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Illustrator":"Advanced","Adobe InDesign":"Advanced","Adobe Photoshop":"Advanced","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"Sana Qureshi","manager":"Laura Bennett","role":"Multimedia Specialist","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Intermediate","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Intermediate","Adobe InDesign":"Intermediate","Adobe Photoshop":"Intermediate","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"Oliver White","manager":"Laura Bennett","role":"Multimedia Specialist","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Intermediate","Adobe InDesign":"Intermediate","Adobe Photoshop":"Intermediate","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"Rahul Gupta","manager":"Laura Bennett","role":"Content Developer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Foundational","Adobe InDesign":"Foundational","Adobe Photoshop":"Foundational","Adobe Premier Pro":"Intermediate","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Microsoft Excel":"Foundational","Powtoon":"Foundational"}},{"name":"Emma Harris","manager":"Laura Bennett","role":"Content Developer","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Foundational","Problem-Solving":"Intermediate","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Intermediate","Adobe Acrobat":"Foundational","Adobe After Effects":"Advanced","Adobe Captivate":"Foundational","Adobe Firefly":"Foundational","Adobe Illustrator":"Intermediate","Adobe InDesign":"Intermediate","Adobe Photoshop":"Intermediate","Adobe Premier Pro":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Powtoon":"Foundational"}},{"name":"Tanya Joshi","manager":"Laura Bennett","role":"UI/UX","skills":{"Agility":"Intermediate","Business Acumen":"Foundational","Communication":"Intermediate","Influence & Persuasion":"Foundational","Continuous Learning & Adaptability":"Advanced","Problem-Solving":"Advanced","Decision-Making":"Foundational","Project Management":"Foundational","Customer/External Focus":"Foundational","Instructional Design (Learning Theories & ADDIE)":"Foundational","Graphic Design & UI/UX":"Expert","Adobe Acrobat":"Foundational","Adobe After Effects":"Intermediate","Adobe Captivate":"Foundational","Adobe Firefly":"Intermediate","Adobe Illustrator":"Advanced","Adobe InDesign":"Intermediate","Adobe Photoshop":"Advanced","Articulate Rise":"Foundational","Articulate Storyline":"Foundational","Grammarly":"Foundational","Smartsheet":"Foundational"}},{"name":"Liam Thompson","manager":"David Okafor","role":"QA","skills":{}}];
 
 const skillCategories = {
   transferable: ["Agility","Business Acumen","Communication","Influence & Persuasion","Continuous Learning & Adaptability","Problem-Solving","Decision-Making","Project Management","Performance Consulting","Customer/External Focus"],
